@@ -1,11 +1,12 @@
-const mongoose = require("mongoose");
-const ratingSchema = new mongoose.Schema({
-  requestId: { type: mongoose.Schema.Types.ObjectId, ref: "ServiceRequest" },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  workerId: { type: mongoose.Schema.Types.ObjectId, ref: "Worker" },
-  rating: { type: Number, min: 1, max: 5 },
-  comment: String,
-  createdAt: { type: Date, default: Date.now }
-});
-module.exports = mongoose.model("Rating", ratingSchema);
+// backend/models/Rating.js
+const mongoose = require('mongoose');
 
+const RatingSchema = new mongoose.Schema({
+  rater: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  subjectId: { type: String, required: true },
+  subjectType: { type: String, default: 'worker' },
+  score: { type: Number, required: true, min: 0, max: 5 },
+  comment: { type: String },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Rating', RatingSchema);
