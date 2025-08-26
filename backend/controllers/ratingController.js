@@ -1,11 +1,11 @@
 // backend/controllers/ratingController.js
-const Rating = require('../models/Rating'); // cria o model abaixo se não existir
+const Rating = require('../models/Rating'); // se não existir, cria (veja abaixo)
 
 // Criar avaliação
-exports.createRating = async (req, res) => {
+async function createRating(req, res) {
   try {
     const { subjectId, subjectType, score, comment } = req.body;
-    const rater = req.user?.id || req.body.rater; // assume que ensureAuth populou req.user
+    const rater = req.user?.id || req.body.rater || null;
     const rating = new Rating({
       rater,
       subjectId,
@@ -19,36 +19,39 @@ exports.createRating = async (req, res) => {
     console.error('createRating error', err);
     return res.status(500).json({ success: false, message: 'Erro interno' });
   }
-};
+}
 
-// Listar avaliações (por subject)
-exports.getRatingsBySubject = async (req, res) => {
+// Listar avaliações por subject
+async function getRatingsBySubject(req, res) {
   try {
     const { subjectId } = req.params;
+    if (!subjectId) return res.status(400).json({ success: false, message: 'subjectId obrigatório' });
     const ratings = await Rating.find({ subjectId }).sort({ createdAt: -1 });
     return res.json({ success: true, data: ratings });
   } catch (err) {
     console.error('getRatingsBySubject error', err);
     return res.status(500).json({ success: false, message: 'Erro interno' });
   }
-};
+}
 
-// Remover ou editar avaliação (simples)
-exports.deleteRating = async (req, res) => {
+// Apagar avaliação
+async function deleteRating(req, res) {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, message: 'id obrigatório' });
     await Rating.findByIdAndDelete(id);
     return res.json({ success: true, message: 'Avaliação removida' });
   } catch (err) {
     console.error('deleteRating error', err);
     return res.status(500).json({ success: false, message: 'Erro interno' });
   }
-};
+}
 
-// Atualizar avaliação (parcial)
-exports.updateRating = async (req, res) => {
+// Atualizar avaliação
+async function updateRating(req, res) {
   try {
     const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, message: 'id obrigatório' });
     const updates = req.body;
     const rating = await Rating.findByIdAndUpdate(id, updates, { new: true });
     return res.json({ success: true, data: rating });
@@ -56,4 +59,11 @@ exports.updateRating = async (req, res) => {
     console.error('updateRating error', err);
     return res.status(500).json({ success: false, message: 'Erro interno' });
   }
+}
+
+module.exports = {
+  createRating,
+  getRatingsBySubject,
+  deleteRating,
+  updateRating
 };
